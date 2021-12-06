@@ -132,7 +132,7 @@ aside {
   height: 100%;
   transform: translateX(100%);
   transition: 0.3s all ease-out;
-  background-color: #efefef;
+  background-color: #004000; /* #efefef; */
   padding: 1rem;
 }
 
