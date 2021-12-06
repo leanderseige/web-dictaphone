@@ -1,10 +1,14 @@
 // set up basic variables for app
 
+const slider = document.querySelector('.slider');
 const record = document.querySelector('.record');
 const stop = document.querySelector('.stop');
 const soundClips = document.querySelector('.sound-clips');
 const canvas = document.querySelector('.visualizer');
 const mainSection = document.querySelector('.main-controls');
+
+var x = 0
+var fac = 1.0
 
 // disable stop button while not recording
 
@@ -120,6 +124,11 @@ function visualize(stream) {
     audioCtx = new AudioContext();
   }
 
+  slider.oninput = (e) => {
+    console.log(e.target.value)
+    fac = e.target.value
+  }
+
   const source = audioCtx.createMediaStreamSource(stream);
 
   const analyser = audioCtx.createAnalyser();
@@ -148,8 +157,9 @@ function visualize(stream) {
 
     canvasCtx.beginPath();
 
+    // let sliceWidth = WIDTH * 1.0 / bufferLength;
     let sliceWidth = WIDTH * 1.0 / bufferLength;
-    let x = 0;
+    // let x = 0;
 
 
     for(let i = 0; i < bufferLength; i++) {
@@ -157,13 +167,18 @@ function visualize(stream) {
       let v = dataArray[i] / 128.0;
       let y = v * HEIGHT/2;
 
-      if(i === 0) {
+      if(i === 0 || x === 0) {
         canvasCtx.moveTo(x, y);
       } else {
         canvasCtx.lineTo(x, y);
       }
 
-      x += sliceWidth;
+      x += sliceWidth/fac;
+      if(x>WIDTH) {
+        x=0
+        canvasCtx.fillStyle = 'rgb(0, 64, 0)';
+        canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+      }
     }
 
     canvasCtx.lineTo(canvas.width, canvas.height/2);
