@@ -17,14 +17,20 @@ stop.disabled = true;
 // visualiser setup - create web audio api context and canvas
 
 let audioCtx;
+
 const canvasCtx = canvas.getContext("2d");
+canvasCtx.strokeStyle = 'rgb(255, 255, 255)';
+canvasCtx.setLineDash([5,5]);
+canvasCtx.lineWidth = 2;
 
 var offcanvas = document.createElement('canvas');
 offcanvas.id = "OffCanvas";
 offcanvas.width = canvas.width
 offcanvas.height = canvas.height
 const offcanvasCtx = offcanvas.getContext("2d");
-
+offcanvasCtx.fillStyle = 'rgb(0, 64, 0)';
+offcanvasCtx.strokeStyle = 'rgb(0, 255, 0)';
+offcanvasCtx.lineWidth = 2;
 
 //main block for doing the audio recording
 
@@ -147,6 +153,9 @@ function visualize(stream) {
   //analyser.connect(audioCtx.destination);
 
   draw()
+  offcanvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+  offcanvasCtx.beginPath();
+  offcanvasCtx.moveTo(0,canvas.height/2)
 
   function draw() {
     const WIDTH = offcanvas.width
@@ -156,43 +165,33 @@ function visualize(stream) {
 
     analyser.getByteTimeDomainData(dataArray);
 
-    offcanvasCtx.fillStyle = 'rgb(0, 64, 0)';
-    offcanvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
-
-    offcanvasCtx.lineWidth = 2;
-    offcanvasCtx.strokeStyle = 'rgb(0, 255, 0)';
-
-    offcanvasCtx.beginPath();
-
-    // let sliceWidth = WIDTH * 1.0 / bufferLength;
     let sliceWidth = WIDTH * 1.0 / bufferLength;
-    // let x = 0;
-
 
     for(let i = 0; i < bufferLength; i++) {
 
       let v = dataArray[i] / 128.0;
       let y = v * HEIGHT/2;
 
-      if( x === 0) {
-        offcanvasCtx.moveTo(x, y);
-      } else {
-        offcanvasCtx.lineTo(x, y);
-      }
+      offcanvasCtx.lineTo(x, y);
 
       x += sliceWidth/fac;
-      if(x>WIDTH) {
+
+      if(x>=WIDTH) {
+        offcanvasCtx.stroke();
         x=0
-        offcanvasCtx.fillStyle = 'rgb(0, 64, 0)';
+        canvasCtx.drawImage(offcanvas, 0, 0);
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(0, HEIGHT/2);
+        canvasCtx.lineTo(WIDTH, HEIGHT/2);
+        canvasCtx.stroke();
         offcanvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+        offcanvasCtx.beginPath();
+        offcanvasCtx.moveTo(0,canvas.height/2)
       }
+
     }
-
-    // canvasCtx.lineTo(canvas.width, canvas.height/2);
-    offcanvasCtx.stroke();
-    canvasCtx.drawImage(offcanvas, 0, 0);
-
   }
+
 }
 
 window.onresize = function() {
